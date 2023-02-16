@@ -15,7 +15,7 @@ namespace GunDoors
         public override string Name => "GunDoors";
         public override string Author => "Rysik5318";
         public static Plugin plugin;
-        public override Version Version { get; } = new Version(1, 0, 0);
+        public override Version Version { get; } = new Version(1, 0, 1);
 
         internal List<Door> DoorsInProgress = new List<Door>();
 
