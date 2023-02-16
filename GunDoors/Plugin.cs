@@ -15,7 +15,7 @@ namespace GunDoors
         public override string Name => "GunDoors";
         public override string Author => "Rysik5318";
         public static Plugin plugin;
-        public override Version Version { get; } = new Version(1, 0, 1);
+        public override Version Version { get; } = new Version(1, 0, 0);
 
         internal List<Door> DoorsInProgress = new List<Door>();
 
@@ -23,6 +23,7 @@ namespace GunDoors
         {
             plugin = this;
             Exiled.Events.Handlers.Player.Shooting += OnPlayerShooting;
+            Exiled.Events.Handlers.Server.WaitingForPlayers += OnWaitingForPlayers;
             Log.Info("" +
                 "\nAuthor Plugin - Rysik5318#7967" +
                 "\nCo-Authors - EdrenBaton Team" +
@@ -38,6 +39,7 @@ namespace GunDoors
         { 
             plugin = null;
             Exiled.Events.Handlers.Player.Shooting -= OnPlayerShooting;
+            Exiled.Events.Handlers.Server.WaitingForPlayers -= OnWaitingForPlayers;
             base.OnDisabled();
         }
 
@@ -51,16 +53,22 @@ namespace GunDoors
             if (ObjectName.Contains("TouchScreenPanel") || ObjectName.Contains("collider"))
             {
                 Door door = Door.Get(raycastHit.transform.GetComponentInParent<DoorVariant>());
-                if (!door.IsBroken && !door.IsLocked && !door.IsMoving)
+                if (!door.IsBroken && !door.IsLocked && !DoorsInProgress.Contains(door))
                 {
                     if (door.RequiredPermissions.RequiredPermissions == Interactables.Interobjects.DoorUtils.KeycardPermissions.None && ev.Player.CustomInfo != "SCP-343")
                     {
                         door.Base.NetworkTargetState = !door.Base.NetworkTargetState;
+                        DoorsInProgress.Add(door);
+                        Timing.CallDelayed(1.5f, () => DoorsInProgress.Remove(door));
                     }
                     else
                         door.PlaySound(DoorBeepType.PermissionDenied);
                 }
             }
+        }
+        private void OnWaitingForPlayers()
+        {
+            DoorsInProgress.Clear();
         }
     }
 }
